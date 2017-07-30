@@ -3,4 +3,12 @@ Resources:
   myVPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: 10.0.0.0/16
+      CidrBlock: 10.5.0.0/16
+  mySubnet:
+    Type: "AWS::EC2::Subnet"
+    Properties: 
+      AvailabilityZone: "us-east-1a"
+      CidrBlock: 10.5.1.0/24
+      VpcId: 
+       Ref: myVPC
+
