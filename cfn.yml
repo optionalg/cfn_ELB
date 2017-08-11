@@ -11,79 +11,134 @@ Parameters:
       Type: "String"
       MinLength: "9"
       MaxLength: "18"
-      Default: "0.0.0.0/16"
+      Default: "10.5.0.0/16"
       AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
       ConstraintDescription: "must be a valid IP CIDR range of the form x.x.x.x/x." 
      
   CidrelbSubnet1 : 
-      Description : " The IP address range that can be used to create VPC"
+      Description : " The IP address range that can be used to create elbsubnet1"
       Type: "String"
       MinLength: "9"
       MaxLength: "18"
-      Default: "0.0.0.0/16"
+      Default: "10.5.1.0/24"
       AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
       ConstraintDescription: "must be a valid IP CIDR range of the form x.x.x.x/x." 
   CidrelbSubnet2 : 
-      Description : " The IP address range that can be used to create VPC"
+      Description : " The IP address range that can be used to create elbsubnet2"
       Type: "String"
       MinLength: "9"
       MaxLength: "18"
-      Default: "0.0.0.0/16"
+      Default: "10.5.2.0/24"
       AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
       ConstraintDescription: "must be a valid IP CIDR range of the form x.x.x.x/x." 
         
   CidrappSubnet1 : 
-      Description : " The IP address range that can be used to create VPC"
+      Description : " The IP address range that can be used to create appsubnet1"
       Type: "String"
       MinLength: "9"
       MaxLength: "18"
-      Default: "0.0.0.0/16"
+      Default: "10.5.3.0/24"
       AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
       ConstraintDescription: "must be a valid IP CIDR range of the form x.x.x.x/x." 
   CidrappSubnet2 : 
-      Description : " The IP address range that can be used to create VPC"
+      Description : " The IP address range that can be used to create appsubnet2"
       Type: "String"
       MinLength: "9"
       MaxLength: "18"
-      Default: "0.0.0.0/16"
+      Default: "10.5.4.0/24"
       AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
       ConstraintDescription: "must be a valid IP CIDR range of the form x.x.x.x/x." 
 
         
   CidrdbSubnet1 : 
-      Description : " The IP address range that can be used to create VPC"
+      Description : " The IP address range that can be used to create dbsubnet1"
       Type: "String"
       MinLength: "9"
       MaxLength: "18"
-      Default: "0.0.0.0/16"
+      Default: "10.5.5.0/24"
       AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
       ConstraintDescription: "must be a valid IP CIDR range of the form x.x.x.x/x." 
 
   CidrdbSubnet2 : 
-      Description : " The IP address range that can be used to create VPC"
+      Description : " The IP address range that can be used to create dbsubnet2"
       Type: "String"
       MinLength: "9"
       MaxLength: "18"
-      Default: "0.0.0.0/16"
+      Default: "10.5.6.0/24"
       AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
       ConstraintDescription: "must be a valid IP CIDR range of the form x.x.x.x/x." 
                
-  elbSecurityGroup : 
-      Type : "AWS::EC2::SecurityGroup::Id"
-      Description : "The list of Security group Ids in your Virtual Private Cloud (VPC)"
-      ConstraintDescription : "must be a list of an existing security group in the selected Virtual Private Cloud."
-    
-  appSecurityGroup : 
-      Type : "AWS::EC2::SecurityGroup::Id"
-      Description : "The list of Security group Ids in your Virtual Private Cloud (VPC)"
-      ConstraintDescription : "must be a list of an existing security group in the selected Virtual Private Cloud."
-
+  
 Resources:
+
   myVPC:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: 
-        Ref:  CidrBlockVPC  
+        Ref:  CidrBlockVPC 
+
+  elbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for elb
+      VpcId:
+       Ref: myVPC
+      Tags:
+        - Key: Name
+          Value: elb
+      SecurityGroupIngress:
+       - IpProtocol: -1
+         FromPort: '0'
+         ToPort: '65535'
+         CidrIp: 0.0.0.0/0
+
+      SecurityGroupEgress:
+       - IpProtocol: -1
+         FromPort: '0'
+         ToPort: '65535'
+         CidrIp: 0.0.0.0/0
+
+  appSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for app instance
+      VpcId:
+        Ref: myVPC
+      Tags:
+        - Key: Name
+          Value: app
+      SecurityGroupEgress:
+       - IpProtocol: -1
+         FromPort: '0'
+         ToPort: '65535'
+         CidrIp: 0.0.0.0/0
+
+
+  appSecurityGroupIngress1:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref:  appSecurityGroup
+       
+      IpProtocol: tcp
+      FromPort: '80'
+      ToPort: '80'
+      CidrIp: 10.5.1.0/24
+      
+  appSecurityGroupIngress2:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId:
+        Ref:  appSecurityGroup
+        
+      IpProtocol: -1
+      FromPort: '0'
+      ToPort: '65535'
+      SourceSecurityGroupId: 
+        Ref: appSecurityGroup
+  
+
+ 
   elbSubnet1:
     Type: "AWS::EC2::Subnet"
     Properties: 
@@ -106,12 +161,18 @@ Resources:
         Value: elb2 
       VpcId:
        Ref: myVPC
+
+
+
   appSubnet1:
     Type: "AWS::EC2::Subnet"
     Properties:
       AvailabilityZone: "us-east-1a"
       CidrBlock: 
         Ref: CidrappSubnet1
+      Tags:
+      - Key: Name
+        Value: app1
       VpcId:
        Ref: myVPC
 
@@ -121,8 +182,14 @@ Resources:
       AvailabilityZone: "us-east-1b"
       CidrBlock: 
         Ref: CidrappSubnet2
+      Tags:
+      - Key: Name
+        Value: app2
       VpcId:
        Ref: myVPC
+
+
+
   dbSubnet1:
     Type: "AWS::EC2::Subnet"
     Properties:
@@ -139,6 +206,9 @@ Resources:
         Ref: CidrdbSubnet2
       VpcId:
        Ref: myVPC
+
+
+
   InternetGateway:
     Type: "AWS::EC2::InternetGateway"
     Properties:
@@ -152,6 +222,8 @@ Resources:
       Ref: myVPC
      InternetGatewayId:
       Ref: InternetGateway
+
+
 
   PubRouteTable:
     Type: AWS::EC2::RouteTable
@@ -169,18 +241,18 @@ Resources:
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId:
         Ref: InternetGateway
-  PubSubnetRouteTableAssociation:
+  PubSubnetRouteTableAssociation1:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId:
-        Ref: appSubnet1
+        Ref: elbSubnet1
       RouteTableId:
         Ref: PubRouteTable
-  PubSubnetRouteTableAssociation:
+  PubSubnetRouteTableAssociation2:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId:
-        Ref: appSubnet2
+        Ref: elbSubnet2
       RouteTableId:
         Ref: PubRouteTable
   PriRouteTable:
@@ -191,34 +263,37 @@ Resources:
       Tags:
       - Key: Name
         Value: PriRoute
-  PriSubnetRouteTableAssociation:
+  PriSubnetRouteTableAssociation1:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId:
         Ref: appSubnet1
       RouteTableId:
         Ref: PriRouteTable
-  PriSubnetRouteTableAssociation:
+  PriSubnetRouteTableAssociation2:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId:
         Ref: appSubnet2
       RouteTableId:
         Ref: PriRouteTable
-  PriSubnetRouteTableAssociation:
+  PriSubnetRouteTableAssociation3:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId:
         Ref: dbSubnet1
       RouteTableId:
         Ref: PriRouteTable
-  PriSubnetRouteTableAssociation:
+  PriSubnetRouteTableAssociation4:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId:
         Ref: dbSubnet2
       RouteTableId:
         Ref: PriRouteTable
+
+
+
   loadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -258,17 +333,17 @@ Resources:
     Port: 10
     Protocol: HTTP
     TargetGroupAttributes:
-    - Key: deregistration_delay.timeout_seconds
-      Value: '20'
+     - Key: deregistration_delay.timeout_seconds
+       Value: '20'
     Targets:
-    - Id:
+     - Id:
         Ref: appInstance1
-      Port: 80
+       Port: 80
    
     UnhealthyThresholdCount: 3
     VpcId:
       Ref: myVPC
-       
+
   appInstance1: 
     Type: "AWS::EC2::Instance"
     Properties: 
@@ -278,16 +353,10 @@ Resources:
         Ref: "KeyName"
       SubnetId: 
          Ref: appSubnet1
-      SecurityGroups:
+      SecurityGroupIds:
         - Ref: appSecurityGroup
-      
+        
+       
 
 
-
-  
-
-
-
-
-
-
+ 
