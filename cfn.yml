@@ -1,14 +1,293 @@
 AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  KeyName : 
+     Description : "Name of an existing EC2 KeyPair to enable SSH access to the instances"
+     Type : "AWS::EC2::KeyPair::KeyName"
+     ConstraintDescription : "must be the name of an existing EC2 KeyPair."
+
+  CidrBlockVPC: 
+      Description : " The IP address range that can be used to create VPC"
+      Type: "String"
+      MinLength: "9"
+      MaxLength: "18"
+      Default: "0.0.0.0/16"
+      AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+      ConstraintDescription: "must be a valid IP CIDR range of the form x.x.x.x/x." 
+     
+  CidrelbSubnet1 : 
+      Description : " The IP address range that can be used to create VPC"
+      Type: "String"
+      MinLength: "9"
+      MaxLength: "18"
+      Default: "0.0.0.0/16"
+      AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+      ConstraintDescription: "must be a valid IP CIDR range of the form x.x.x.x/x." 
+  CidrelbSubnet2 : 
+      Description : " The IP address range that can be used to create VPC"
+      Type: "String"
+      MinLength: "9"
+      MaxLength: "18"
+      Default: "0.0.0.0/16"
+      AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+      ConstraintDescription: "must be a valid IP CIDR range of the form x.x.x.x/x." 
+        
+  CidrappSubnet1 : 
+      Description : " The IP address range that can be used to create VPC"
+      Type: "String"
+      MinLength: "9"
+      MaxLength: "18"
+      Default: "0.0.0.0/16"
+      AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+      ConstraintDescription: "must be a valid IP CIDR range of the form x.x.x.x/x." 
+  CidrappSubnet2 : 
+      Description : " The IP address range that can be used to create VPC"
+      Type: "String"
+      MinLength: "9"
+      MaxLength: "18"
+      Default: "0.0.0.0/16"
+      AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+      ConstraintDescription: "must be a valid IP CIDR range of the form x.x.x.x/x." 
+
+        
+  CidrdbSubnet1 : 
+      Description : " The IP address range that can be used to create VPC"
+      Type: "String"
+      MinLength: "9"
+      MaxLength: "18"
+      Default: "0.0.0.0/16"
+      AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+      ConstraintDescription: "must be a valid IP CIDR range of the form x.x.x.x/x." 
+
+  CidrdbSubnet2 : 
+      Description : " The IP address range that can be used to create VPC"
+      Type: "String"
+      MinLength: "9"
+      MaxLength: "18"
+      Default: "0.0.0.0/16"
+      AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+      ConstraintDescription: "must be a valid IP CIDR range of the form x.x.x.x/x." 
+               
+  elbSecurityGroup : 
+      Type : "AWS::EC2::SecurityGroup::Id"
+      Description : "The list of Security group Ids in your Virtual Private Cloud (VPC)"
+      ConstraintDescription : "must be a list of an existing security group in the selected Virtual Private Cloud."
+    
+  appSecurityGroup : 
+      Type : "AWS::EC2::SecurityGroup::Id"
+      Description : "The list of Security group Ids in your Virtual Private Cloud (VPC)"
+      ConstraintDescription : "must be a list of an existing security group in the selected Virtual Private Cloud."
+
 Resources:
   myVPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: 10.5.0.0/16
-  mySubnet:
+      CidrBlock: 
+        Ref:  CidrBlockVPC  
+  elbSubnet1:
     Type: "AWS::EC2::Subnet"
     Properties: 
       AvailabilityZone: "us-east-1a"
-      CidrBlock: 10.5.1.0/24
+      CidrBlock: 
+        Ref: CidrelbSubnet1
+      Tags:
+      - Key: Name
+        Value: elb1
       VpcId: 
        Ref: myVPC
+  elbSubnet2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: "us-east-1b"
+      CidrBlock: 
+        Ref: CidrelbSubnet2 
+      Tags:
+      - Key: Name
+        Value: elb2 
+      VpcId:
+       Ref: myVPC
+  appSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: "us-east-1a"
+      CidrBlock: 
+        Ref: CidrappSubnet1
+      VpcId:
+       Ref: myVPC
+
+  appSubnet2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: "us-east-1b"
+      CidrBlock: 
+        Ref: CidrappSubnet2
+      VpcId:
+       Ref: myVPC
+  dbSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: "us-east-1a"
+      CidrBlock: 
+        Ref: CidrdbSubnet1
+      VpcId:
+       Ref: myVPC
+  dbSubnet2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: "us-east-1b"
+      CidrBlock: 
+        Ref: CidrdbSubnet2
+      VpcId:
+       Ref: myVPC
+  InternetGateway:
+    Type: "AWS::EC2::InternetGateway"
+    Properties:
+      Tags:
+      - Key: Name
+        Value: IG-elb
+  AttachGateway:
+    Type: "AWS::EC2::VPCGatewayAttachment"
+    Properties:
+     VpcId:
+      Ref: myVPC
+     InternetGatewayId:
+      Ref: InternetGateway
+
+  PubRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: myVPC
+      Tags:
+      - Key: Name
+        Value: elbRoute
+  PubRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: PubRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: InternetGateway
+  PubSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: appSubnet1
+      RouteTableId:
+        Ref: PubRouteTable
+  PubSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: appSubnet2
+      RouteTableId:
+        Ref: PubRouteTable
+  PriRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: myVPC
+      Tags:
+      - Key: Name
+        Value: PriRoute
+  PriSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: appSubnet1
+      RouteTableId:
+        Ref: PriRouteTable
+  PriSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: appSubnet2
+      RouteTableId:
+        Ref: PriRouteTable
+  PriSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: dbSubnet1
+      RouteTableId:
+        Ref: PriRouteTable
+  PriSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: dbSubnet2
+      RouteTableId:
+        Ref: PriRouteTable
+  loadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internet-facing
+      Subnets:
+       - Ref: elbSubnet1
+       - Ref: elbSubnet2
+      LoadBalancerAttributes:
+       - Key: idle_timeout.timeout_seconds
+         Value: '50'
+      SecurityGroups:
+        - Ref: elbSecurityGroup
+      
+      
+  Listener:
+   Type: AWS::ElasticLoadBalancingV2::Listener
+   Properties:
+    DefaultActions:
+    - Type: forward
+      TargetGroupArn:
+        Ref: TargetGroup
+    LoadBalancerArn:
+      Ref: loadBalancer
+    Port: '80'
+    Protocol: HTTP
+
+  TargetGroup:
+   Type: AWS::ElasticLoadBalancingV2::TargetGroup
+   Properties:
+    HealthCheckIntervalSeconds: 30
+    HealthCheckProtocol: HTTP
+    HealthCheckTimeoutSeconds: 10
+    HealthyThresholdCount: 4
+    Matcher:
+      HttpCode: '200'
+    Name: MyTargets
+    Port: 10
+    Protocol: HTTP
+    TargetGroupAttributes:
+    - Key: deregistration_delay.timeout_seconds
+      Value: '20'
+    Targets:
+    - Id:
+        Ref: appInstance1
+      Port: 80
+   
+    UnhealthyThresholdCount: 3
+    VpcId:
+      Ref: myVPC
+       
+  appInstance1: 
+    Type: "AWS::EC2::Instance"
+    Properties: 
+      ImageId: "ami-cd0f5cb6" 
+      InstanceType: "t2.micro"
+      KeyName: 
+        Ref: "KeyName"
+      SubnetId: 
+         Ref: appSubnet1
+      SecurityGroups:
+        - Ref: appSecurityGroup
+      
+
+
+
+  
+
+
+
+
+
 
