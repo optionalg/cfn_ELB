@@ -8,8 +8,8 @@ Resources:
     Type: AWS::EC2::VPC
     Properties:
       Tags:
-        Key: Name
-        Value: elbVPC
+        - Key: Name
+          Value: elbVPC
       CidrBlock: 10.9.0.0/16
       
 
