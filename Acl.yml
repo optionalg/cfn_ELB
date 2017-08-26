@@ -1,0 +1,246 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+
+
+Resources:
+
+  myVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      Tags:
+        Key: Name
+        Value: elbVPC
+      CidrBlock: 10.9.0.0/16
+      
+
+  elbPubACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+       Tags: 
+         - Key: Name
+           Value: elbpubacl
+       VpcId:
+         Ref: myVPC
+
+
+  elbIngress100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref: elbPubACL
+       RuleNumber : 100
+       Egress : False
+       Protocol : 6
+       CidrBlock : 0.0.0.0/0 
+       RuleAction : allow
+       PortRange: 
+           From: 80
+           To: 80
+
+
+
+
+  elb1app1ACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+       Tags: 
+         - Key: Name
+           Value: elb1app1acl
+       VpcId:
+         Ref: myVPC
+
+
+  elb1app1Egress100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref:  elb1app1ACL
+       RuleNumber : 100
+       Egress : True
+       Protocol : -1
+       CidrBlock : 10.5.3.0/24 
+       RuleAction : allow
+
+  elb1app1Ingress100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref:  elb1app1ACL
+       RuleNumber : 100
+       Egress : False
+       Protocol : -1
+       CidrBlock : 10.5.3.0/24 
+       RuleAction : allow
+
+
+
+
+  elb2app2ACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+       Tags: 
+         - Key: Name
+           Value: elb2app2acl
+       VpcId:
+         Ref: myVPC
+
+
+  elb2app2Egress100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref: elb2app2ACL
+       RuleNumber : 100
+       Egress : True
+       Protocol : -1
+       CidrBlock : 10.5.4.0/24 
+       RuleAction : allow
+
+  elb2app2Ingress100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref: elb2app2ACL
+       RuleNumber : 100
+       Egress : False
+       Protocol : -1
+       CidrBlock : 10.5.4.0/24 
+       RuleAction : allow
+
+
+
+
+  
+  app1elb1db1ACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+       Tags: 
+         - Key: Name
+           Value: app1elb1db1acl
+       VpcId:
+         Ref: myVPC
+
+
+  app1elb1db1Egress100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref:  app1elb1db1ACL
+       RuleNumber : 100
+       Egress : True
+       Protocol : -1
+       CidrBlock : 10.5.1.0/24 
+       RuleAction : allow
+
+  app1elb1db1Egress200:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref:  app1elb1db1ACL
+       RuleNumber : 200
+       Egress : True
+       Protocol : -1
+       CidrBlock : 10.5.5.0/24 
+       RuleAction : allow
+
+  app1elb1db1Ingress100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref:  app1elb1db1ACL
+       RuleNumber : 100
+       Egress : False
+       Protocol : -1
+       CidrBlock : 10.5.1.0/24 
+       RuleAction : allow 
+
+
+  app2elb2db2ACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+       Tags: 
+         - Key: Name
+           Value: app2elb2db2acl
+       VpcId:
+         Ref: myVPC
+
+
+  app2elb2db2Egress100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref:   app2elb2db2ACL
+       RuleNumber : 100
+       Egress : True
+       Protocol : -1
+       CidrBlock : 10.5.2.0/24 
+       RuleAction : allow
+
+  app2elb2db2Egress200:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref:   app2elb2db2ACL
+       RuleNumber : 200
+       Egress : True
+       Protocol : -1
+       CidrBlock : 10.5.6.0/24 
+       RuleAction : allow
+
+  app2elb2db2Ingress100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref:   app2elb2db2ACL
+       RuleNumber : 100
+       Egress : False
+       Protocol : -1
+       CidrBlock : 10.5.2.0/24 
+       RuleAction : allow 
+
+  db1app1ACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+       Tags: 
+         - Key: Name
+           Value: db1app1acl
+       VpcId:
+         Ref: myVPC
+
+
+  db1app1Ingress100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref:  db1app1ACL
+       RuleNumber : 100
+       Egress : False
+       Protocol : -1
+       CidrBlock : 10.5.3.0/24 
+       RuleAction : allow
+
+  db2app2ACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+       Tags: 
+         - Key: Name
+           Value: db2app2acl
+       VpcId:
+         Ref: myVPC
+
+
+  db2app2Ingress100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref:  db2app2ACL
+       RuleNumber : 100
+       Egress : False
+       Protocol : -1
+       CidrBlock : 10.5.4.0/24 
+       RuleAction : allow
+
+ 
+
+
+
