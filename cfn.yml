@@ -71,12 +71,14 @@ Parameters:
   
 Resources:
 
+############################ VPC resource ##############################
   myVPC:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: 
         Ref:  CidrBlockVPC 
 
+############################  All SecurityGroups ########################
   elbSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -138,7 +140,11 @@ Resources:
         Ref: appSecurityGroup
   
 
- 
+
+
+########################## All Subnets ###############################
+
+## Public Subnets 
   elbSubnet1:
     Type: "AWS::EC2::Subnet"
     Properties: 
@@ -163,7 +169,7 @@ Resources:
        Ref: myVPC
 
 
-
+## Private subnets
   appSubnet1:
     Type: "AWS::EC2::Subnet"
     Properties:
@@ -189,7 +195,6 @@ Resources:
        Ref: myVPC
 
 
-
   dbSubnet1:
     Type: "AWS::EC2::Subnet"
     Properties:
@@ -208,7 +213,7 @@ Resources:
        Ref: myVPC
 
 
-
+######################### Internet Gateway ##################################
   InternetGateway:
     Type: "AWS::EC2::InternetGateway"
     Properties:
@@ -224,7 +229,7 @@ Resources:
       Ref: InternetGateway
 
 
-
+############################# All RouteTables ####################################
   PubRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -293,7 +298,257 @@ Resources:
         Ref: PriRouteTable
 
 
+#################################### All ACLs ##########################################
+  elbPubACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+       Tags: 
+         - Key: Name
+           Value: elbpubacl
+       VpcId:
+         Ref: myVPC
 
+  elbIngress100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref: elbPubACL
+       RuleNumber : 100
+       Egress : False
+       Protocol : 6
+       CidrBlock : 0.0.0.0/0 
+       RuleAction : allow
+       PortRange: 
+           From: 80
+           To: 80
+
+
+  elb1app1ACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+       Tags: 
+         - Key: Name
+           Value: elb1app1acl
+       VpcId:
+         Ref: myVPC
+
+  elb1app1Egress100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref:  elb1app1ACL
+       RuleNumber : 100
+       Egress : True
+       Protocol : 6
+       PortRange: 
+            From: 80
+            To: 80
+       CidrBlock : 10.5.3.0/24 
+       RuleAction : allow
+
+
+  elb2app2ACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+       Tags: 
+         - Key: Name
+           Value: elb2app2acl
+       VpcId:
+         Ref: myVPC
+
+  elb2app2Egress100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref: elb2app2ACL
+       RuleNumber : 100
+       Egress : True
+       Protocol : 6
+       PortRange: 
+            From: 80
+            To: 80
+       CidrBlock : 10.5.4.0/24 
+       RuleAction : allow
+
+  
+  app1elb1db1ACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+       Tags: 
+         - Key: Name
+           Value: app1elb1db1acl
+       VpcId:
+         Ref: myVPC
+
+  app1elb1db1Egress100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref:  app1elb1db1ACL
+       RuleNumber : 100
+       Egress : True
+       Protocol : 6
+       PortRange: 
+            From: 3306
+            To: 3306
+       CidrBlock : 10.5.5.0/24 
+       RuleAction : allow
+
+  app1elb1db1Ingress100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref:  app1elb1db1ACL
+       RuleNumber : 100
+       Egress : False
+       Protocol : 6
+       PortRange: 
+            From: 80
+            To: 80
+       CidrBlock : 10.5.1.0/24 
+       RuleAction : allow 
+
+
+  app2elb2db2ACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+       Tags: 
+         - Key: Name
+           Value: app2elb2db2acl
+       VpcId:
+         Ref: myVPC
+
+  app2elb2db2Egress100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref:   app2elb2db2ACL
+       RuleNumber : 100
+       Egress : True
+       Protocol : 6
+       PortRange: 
+            From: 3306
+            To: 3306
+       CidrBlock : 10.5.6.0/24 
+       RuleAction : allow
+
+  app2elb2db2Ingress100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref:   app2elb2db2ACL
+       RuleNumber : 100
+       Egress : False
+       Protocol : 6
+       PortRange: 
+            From: 80
+            To: 80
+       CidrBlock : 10.5.2.0/24 
+       RuleAction : allow 
+
+
+  db1app1ACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+       Tags: 
+         - Key: Name
+           Value: db1app1acl
+       VpcId:
+         Ref: myVPC
+
+  db1app1Ingress100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref:  db1app1ACL
+       RuleNumber : 100
+       Egress : False
+       Protocol : 6
+       PortRange: 
+            From: 3306
+            To: 3306
+       CidrBlock : 10.5.3.0/24 
+       RuleAction : allow
+
+
+  db2app2ACL:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+       Tags: 
+         - Key: Name
+           Value: db2app2acl
+       VpcId:
+         Ref: myVPC
+
+  db2app2Ingress100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+       NetworkAclId:
+         Ref:  db2app2ACL
+       RuleNumber : 100
+       Egress : False
+       Protocol : 6
+       PortRange: 
+            From: 3306
+            To: 3306
+       CidrBlock : 10.5.4.0/24 
+       RuleAction : allow
+
+
+########################### Subnet-ACL Associations ###########################
+  elbSubnet1ACLs:
+    Type: "AWS::EC2::SubnetNetworkAclAssociation"
+    Properties:
+       SubnetId:
+          Ref: elbSubnet1
+       NetworkAclId:
+          Ref: elbPubACL
+          Ref: elb1app1ACL
+
+  elbSubnet2ACLs:
+    Type: "AWS::EC2::SubnetNetworkAclAssociation"
+    Properties:
+       SubnetId:
+          Ref: elbSubnet2
+       NetworkAclId:
+          Ref: elbPubACL
+          Ref: elb2app2ACL
+
+  appSubnet1ACLs:
+    Type: "AWS::EC2::SubnetNetworkAclAssociation"
+    Properties:
+       SubnetId:
+          Ref: appSubnet1
+       NetworkAclId:
+          Ref: app1elb1db1ACL
+
+  appSubnet2ACLs:
+    Type: "AWS::EC2::SubnetNetworkAclAssociation"
+    Properties:
+       SubnetId:
+          Ref: appSubnet2
+       NetworkAclId:
+          Ref: app2elb2db2ACL
+
+  dbSubnet1ACLs:
+    Type: "AWS::EC2::SubnetNetworkAclAssociation"
+    Properties:
+       SubnetId:
+          Ref: dbSubnet1
+       NetworkAclId:
+          Ref: db1app1ACL
+
+  dbSubnet2ACLs:
+    Type: "AWS::EC2::SubnetNetworkAclAssociation"
+    Properties:
+       SubnetId:
+          Ref: dbSubnet2
+       NetworkAclId:
+          Ref: db2app2ACL
+
+
+
+######################## LoadBalancer Configurations ############################
   loadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -344,6 +599,9 @@ Resources:
     VpcId:
       Ref: myVPC
 
+
+
+########################### Instances ########################
   appInstance1: 
     Type: "AWS::EC2::Instance"
     Properties: 
@@ -355,8 +613,4 @@ Resources:
          Ref: appSubnet1
       SecurityGroupIds:
         - Ref: appSecurityGroup
-        
-       
-
-
  
