@@ -299,30 +299,6 @@ Resources:
 
 
 #################################### All ACLs ##########################################
-  elbPubACL:
-    Type: AWS::EC2::NetworkAcl
-    Properties:
-       Tags: 
-         - Key: Name
-           Value: elbpubacl
-       VpcId:
-         Ref: myVPC
-
-  elbIngress100:
-    Type: AWS::EC2::NetworkAclEntry
-    Properties:
-       NetworkAclId:
-         Ref: elbPubACL
-       RuleNumber : 100
-       Egress : False
-       Protocol : 6
-       CidrBlock : 0.0.0.0/0 
-       RuleAction : allow
-       PortRange: 
-           From: 80
-           To: 80
-
-
   elb1app1ACL:
     Type: AWS::EC2::NetworkAcl
     Properties:
@@ -496,22 +472,20 @@ Resources:
 
 
 ########################### Subnet-ACL Associations ###########################
-  elbSubnet1ACLs:
+  elbSubnet1ACLs2:
     Type: "AWS::EC2::SubnetNetworkAclAssociation"
     Properties:
        SubnetId:
           Ref: elbSubnet1
        NetworkAclId:
-          Ref: elbPubACL
           Ref: elb1app1ACL
 
-  elbSubnet2ACLs:
+  elbSubnet2ACLs2:
     Type: "AWS::EC2::SubnetNetworkAclAssociation"
     Properties:
        SubnetId:
           Ref: elbSubnet2
        NetworkAclId:
-          Ref: elbPubACL
           Ref: elb2app2ACL
 
   appSubnet1ACLs:
